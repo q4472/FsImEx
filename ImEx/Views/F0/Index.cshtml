@@ -1,0 +1,186 @@
+﻿@using System.Data
+@model DataSet
+@{
+    DataTable fs = null;
+    if (Model.Tables.Contains("СписокРасходныхНакладных")) { fs = Model.Tables["СписокРасходныхНакладных"]; }
+    DataTable gz = null;
+    if (Model.Tables.Contains("СписокПриходныхНакладных")) { gz = Model.Tables["СписокПриходныхНакладных"]; }
+}
+<style type="text/css">
+    #FsImEx_ImEx_Views_F0_Index {
+        margin: 4px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 12px;
+    }
+
+        #FsImEx_ImEx_Views_F0_Index td {
+            border: 1px solid black;
+            padding: 2px;
+            background-color: transparent;
+        }
+
+            #FsImEx_ImEx_Views_F0_Index td.fs tr.row:hover {
+                background-color: #fdd;
+            }
+
+        #FsImEx_ImEx_Views_F0_Index .selected {
+            background-color: #dfd;
+        }
+
+        #FsImEx_ImEx_Views_F0_Index .corr {
+            background-color: #ddf;
+        }
+</style>
+<div id="FsImEx_ImEx_Views_F0_Index">
+    <table>
+        <tr>
+            <td class="fs">
+                <input type="text" value="" />
+                <br />
+                <br />
+                <div style="width: 500px; height: 400px; overflow: auto">
+                    @if (fs != null && fs.Rows.Count > 0)
+                    {
+                        <p>Список расходных накладных в "Фарм-Сиб" на "ФК Гарза."</p>
+                        <p>Синим цветом выделены расходные накладные в "Фарм-Сиб" для которых есть приходная накладная в "ФК Гарза".</p>
+                        <br />
+                        DataView dv = fs.DefaultView;
+                        dv.Sort = "ДатаДок desc, НомерДок desc";
+                        <div style="width: 500px; height: 320px; overflow: auto;">
+                            <table>
+                                @for (int ri = 0; ri < dv.Count; ri++)
+                                {
+                                    DataRowView drv = dv[ri];
+                                    <tr class="row" data-corr="0" onclick="FsImEx_ImEx_Views_F0_Index.selectRow(this)">
+                                        <td><input type="checkbox" disabled="disabled" readonly="readonly" /></td>
+                                        <td>@(((DateTime)drv["ДатаДок"]).ToString("dd.MM.yyyy"))</td>
+                                        <td>@drv["НомерДок"]</td>
+                                        <td>@drv["КлиентНаименование"]</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>В "Фарм-Сиб" нет расходных накладных на "ФК Гарза" в указанном периоде.</p>
+                    }
+                </div>
+            </td>
+            <td class="cmd"><input type="button" value=">>>>" disabled="disabled" onclick="FsImEx_ImEx_Views_F0_Index.sendBill()" /></td>
+            <td class="gz">
+                <input type="text" value="" />
+                <br />
+                <br />
+                <div style="width: 500px; height: 400px; overflow: auto">
+                    @if (gz != null && gz.Rows.Count > 0)
+                    {
+                        <p>Список приходных накладных в "ФК Гарза" от "Фарм-Сиб"</p>
+                        <p>Синим цветом выделены приходные накладные в "ФК Гарза" для которых есть расходная накладная в "Фарм-Сиб".</p>
+                        <br />
+                        DataView dv = gz.DefaultView;
+                        dv.Sort = "ДатаДок desc, НомерДок desc";
+                        <div style="width: 500px; height: 320px; overflow: auto;">
+                            <table>
+                                @for (int ri = 0; ri < dv.Count; ri++)
+                                {
+                                    DataRowView drv = dv[ri];
+                                    <tr data-corr="0">
+                                        <td><input type="checkbox" disabled="disabled" readonly="readonly" /></td>
+                                        <td>@(((DateTime)drv["ДатаДок"]).ToString("dd.MM.yyyy"))</td>
+                                        <td>@drv["НомерДок"]</td>
+                                        <td>@drv["КлиентНаименование"]</td>
+                                        <td>@drv["НомерТН"]</td>
+                                    </tr>
+                                }
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p>В "ФК Гарза" нет приходных накладных от "Фарм-Сиб" в указанном периоде.</p>
+                    }
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+    var FsImEx_ImEx_Views_F0_Index = (function () {
+        var mainDiv = $('#FsImEx_ImEx_Views_F0_Index');
+        var fsTable = mainDiv.find('td.fs table');
+        var gzTable = mainDiv.find('td.gz table');
+        var cmdInput = mainDiv.find('td.cmd input');
+
+        (function markCorrItems() {
+            fsTable.find('tr').each(function (index, element) {
+                var fsTr = $(element);
+                var fsN = fsTr.find('td:eq(2)').text();
+                gzTable.find('tr').each(function (index, element) {
+                    var gzTr = $(element);
+                    var gzN = gzTr.find('td:eq(4)').text();
+                    if (fsN == gzN) {
+                        fsTr.attr("data-corr", "1");
+                        fsTr.addClass('corr');
+                        gzTr.attr("data-corr", "1");
+                        gzTr.addClass('corr');
+                    }
+                });
+            });
+        })();
+
+        return {
+            selectRow: function (tr) {
+                // убрать старый выбор
+                {
+                    gzTable.find('tr').each(function (index, element) {
+                        var gzTr = $(element);
+                        if (gzTr.attr("data-corr") == "1") {
+                            gzTr.addClass("corr");
+                            gzTr.removeClass("selected");
+                        }
+                    });
+                    fsTable.find('tr').each(function (index, element) {
+                        var gzTr = $(element);
+                        if (gzTr.attr("data-corr") == "1") {
+                            gzTr.addClass("corr");
+                            gzTr.removeClass("selected");
+                        }
+                    });
+                    fsTable.find('tr.selected').each(function (index, element) {
+                        $(element).removeClass("selected");
+                    });
+                }
+                // сформировать новый
+                {
+                    var fsTr = $(tr);
+                    fsTr.removeClass("corr");
+                    fsTr.addClass("selected");
+                    var fsN = fsTr.find('td:eq(2)').text();
+                    gzTable.find('tr').each(function (index, element) {
+                        var gzTr = $(element);
+                        var gzN = gzTr.find('td:eq(4)').text();
+                        if (fsN == gzN) {
+                            gzTr.removeClass("corr");
+                            gzTr.addClass("selected");
+                        }
+                    });
+                }
+                mainDiv.find('td.fs input').val(fsN);
+                cmdInput.prop("disabled", false);
+            },
+            sendBill: function () {
+                var fsN = mainDiv.find('td.fs input').val();
+                if (fsN) {
+                    if (confirm('Расходная накладная № ' + fsN + ' из "Фарм-Сиб"\nБудет загружена в "ФК Гарза."')) {
+                        var data = 'fsN="' + fsN + '"';
+                        $.post('/ImEx/F0/SendBill', data, function (data) {
+                            alert(data);
+                        });
+                    }
+                }
+            }
+        };
+    })();
+</script>

@@ -1,0 +1,33 @@
+﻿<style type="text/css">
+    #FsImEx_ImEx_Views_F0_WaitingPage {
+        margin: 4px;
+        width: 400px;
+    }
+</style>
+<div id="FsImEx_ImEx_Views_F0_WaitingPage">
+    <p>Выполняется подключение к двум базам 1с - "Фарм-Сиб" и "ФК Гарза" и получение списков расходных и приходных накладных. Пожалуйста подождите.</p>
+    <p style="text-align: center"><span class="cnt"></span></p>
+</div>
+<script type="text/javascript" src="~/Scripts/jquery-2.1.4.min.js"></script>
+<script type="text/javascript">
+        var FsImEx_ImEx_Views_F0_WaitingPage = (function () {
+        var mainDiv = $('#FsImEx_ImEx_Views_F0_WaitingPage');
+        var cnt = mainDiv.find('span.cnt');
+        var i = 1;
+        cnt.text(i.toString());
+        setTimeout(updateCnt, 1000);
+
+        function updateCnt() {
+            cnt.text((i++).toString());
+        setTimeout(updateCnt, 1000);
+        }
+        $.post('/ImEx/F0/Index', null, function (data) {
+            //alert(data);
+            if ($('#_layout_content').length > 0) {
+                $('#_layout_content').html(data);
+            } else {
+                $('body').html(data);
+            }
+        });
+    })();
+</script>
