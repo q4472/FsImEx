@@ -60,7 +60,7 @@ namespace ImEx.Controllers
             String РасходнаяНакладная = null;
             RequestPackage rqp = new RequestPackage
             {
-                Command = "ПолучитьИз1СФармСибРасходнуюНакладную",
+                Command = "ПолучитьРасходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
                     new RequestParameter { Name = "fsN", Value = fsN }
@@ -79,7 +79,7 @@ namespace ImEx.Controllers
             Double скидкаПоставщика = 0.05; // 5%
             RequestPackage rqp = new RequestPackage
             {
-                Command = "ДобавитьВ1СФКГарзаПриходнуюНакладную",
+                Command = "ДобавитьПриходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
                     new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
