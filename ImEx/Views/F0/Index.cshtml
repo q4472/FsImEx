@@ -105,19 +105,20 @@
         </tr>
     </table>
 </div>
-<script type="text/javascript" src="~/Scripts/jquery-2.1.4.min.js"></script>
 <script type="text/javascript">
     var FsImEx_ImEx_Views_F0_Index = (function () {
         var mainDiv = $('#FsImEx_ImEx_Views_F0_Index');
         var fsTable = mainDiv.find('td.fs table');
+        var fsRows = fsTable.find('tr');
         var gzTable = mainDiv.find('td.gz table');
+        var gzRows = gzTable.find('tr');
         var cmdInput = mainDiv.find('td.cmd input');
-
+        
         (function markCorrItems() {
-            fsTable.find('tr').each(function (index, element) {
+            fsRows.each(function (index, element) {
                 var fsTr = $(element);
                 var fsN = fsTr.find('td:eq(2)').text();
-                gzTable.find('tr').each(function (index, element) {
+                gzRows.each(function (index, element) {
                     var gzTr = $(element);
                     var gzN = gzTr.find('td:eq(4)').text();
                     if (fsN == gzN) {
@@ -125,11 +126,12 @@
                         fsTr.addClass('corr');
                         gzTr.attr("data-corr", "1");
                         gzTr.addClass('corr');
+                        return false; // break each loop
                     }
                 });
             });
         })();
-
+        
         return {
             selectRow: function (tr) {
                 // убрать старый выбор

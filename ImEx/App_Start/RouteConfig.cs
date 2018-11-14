@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using System.Web.Routing;
 
 namespace ImEx
@@ -11,25 +7,26 @@ namespace ImEx
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
-            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
             routes.MapRoute(
                 name: null,
-                url: "ImEx/F0/SendBill/{*pathInfo}",
+                url: "ImEx/F0/SendBill",
                 defaults: new { controller = "F0", action = "SendBill" }
             );
 
             routes.MapRoute(
                 name: null,
-                url: "ImEx/F0/Index/{*pathInfo}",
+                url: "ImEx/F0/Index",
                 defaults: new { controller = "F0", action = "Index" }
             );
 
             routes.MapRoute(
                 name: null,
-                url: "ImEx/F0/{*pathInfo}",
+                url: "ImEx/F0",
                 defaults: new { controller = "F0", action = "WaitingPage" }
             );
+
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+            routes.IgnoreRoute("{*pathInfo}");
         }
     }
 }

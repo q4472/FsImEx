@@ -1,6 +1,5 @@
 ﻿using Nskd;
 using System;
-using System.Collections;
 using System.Data;
 using System.Web.Mvc;
 
@@ -11,15 +10,10 @@ namespace ImEx.Controllers
         public Object Index()
         {
             Object r = "FsImEx_ImEx_HomeController_Index()";
-
             DataSet ds = new DataSet();
 
-            RequestPackage rqp = new RequestPackage
-            {
-                Command = "ПолучитьСписокРасходныхНакладных"
-            };
+            RequestPackage rqp = new RequestPackage { Command = "ПолучитьСписокРасходныхНакладных" };
             ResponsePackage rsp = rqp.GetResponse("http://127.0.0.1:11004/"); // 1С Фарм-Сиб
-
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
@@ -27,20 +21,23 @@ namespace ImEx.Controllers
 
             rqp.Command = "ПолучитьСписокПриходныхНакладных";
             rsp = rqp.GetResponse("http://127.0.0.1:11014/"); // 1С ФК Гарза
-
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
             }
 
             r = PartialView("~/Views/F0/Index.cshtml", ds);
-
             return r;
         }
 
         public Object WaitingPage()
         {
-            return PartialView("~/Views/F0/WaitingPage.cshtml");
+            Object v = null;
+            if (ControllerContext.HttpContext.IsDebuggingEnabled)
+                v = View("~/Views/F0/WaitingPage.cshtml"); // _ViewStart.cshtml
+            else
+                v = PartialView("~/Views/F0/WaitingPage.cshtml");
+            return v;
         }
 
         public Object SendBill(String fsN)
