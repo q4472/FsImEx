@@ -76,12 +76,14 @@ namespace ImEx.Controllers
 
         private void ДобавитьВ1СФКГарзаПриходнуюНакладную(String РасходнаяНакладная)
         {
+            Double скидкаПоставщика = 0.05; // 5%
             RequestPackage rqp = new RequestPackage
             {
                 Command = "ДобавитьВ1СФКГарзаПриходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
-                    new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная }
+                    new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
+                    new RequestParameter { Name = "СкидкаПоставщика", Value = скидкаПоставщика }
                 }
             };
             ResponsePackage rsp = rqp.GetResponse("http://127.0.0.1:11014/");
