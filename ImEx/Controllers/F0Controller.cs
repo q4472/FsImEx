@@ -1,10 +1,13 @@
 ﻿using Nskd;
 using System;
+using System.Globalization;
 using System.Data;
 using System.Web.Mvc;
 
 namespace ImEx.Controllers
 {
+    //public Double Session["discount"] // СкидкаПоставщикаВПроцентах
+
     public class F0Controller : Controller
     {
         public Object Index()
@@ -24,6 +27,27 @@ namespace ImEx.Controllers
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
+            }
+
+            rqp.SessionId = new Guid("00000000-0000-0000-0000-000000000000");
+            rqp.AddSessionIdToParameters();
+            rqp.Command = "[Pharm-Sib].[dbo].[settings_get]";
+            rsp = rqp.GetResponse("http://127.0.0.1:11012/"); // SQL Server
+            if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
+            {
+                DataTable dt = rsp.Data.Tables[0];
+                if (dt.Columns.Count > 0 && dt.Rows.Count > 3)
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        // Я или Гриша
+                        if ((((Int32)dr[1]) == 2 || ((Int32)dr[1]) == 3) && dr[2] as String == "Скидка при оформлении передачи из Фарм-Сиб в Гарза")
+                        {
+                            Double.TryParse(dr[3] as String, NumberStyles.Any, CultureInfo.InvariantCulture , out Double discount);
+                            Session["discount"] = discount;
+                        }
+                    }
+                }
             }
 
             r = PartialView("~/Views/F0/Index.cshtml", ds);
@@ -76,14 +100,13 @@ namespace ImEx.Controllers
 
         private void ДобавитьВ1СФКГарзаПриходнуюНакладную(String РасходнаяНакладная)
         {
-            Double скидкаПоставщика = 0.05; // 5%
             RequestPackage rqp = new RequestPackage
             {
                 Command = "ДобавитьВ1СФКГарзаПриходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
                     new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
-                    new RequestParameter { Name = "СкидкаПоставщика", Value = скидкаПоставщика }
+                    new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
                 }
             };
             ResponsePackage rsp = rqp.GetResponse("http://127.0.0.1:11014/");
