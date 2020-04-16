@@ -10,12 +10,23 @@ namespace ImEx.Controllers
 
     public class F0Controller : Controller
     {
-        public Object Index()
+        public Object Index(String sessionId)
         {
             Object r = "FsImEx_ImEx_HomeController_Index()";
+            DateTime преиодС = DateTime.Now.AddMonths(-2);
+            Guid.TryParse(sessionId, out Guid sid);
+
             DataSet ds = new DataSet();
 
-            RequestPackage rqp = new RequestPackage { Command = "ПолучитьСписокРасходныхНакладных" };
+            RequestPackage rqp = new RequestPackage
+            {
+                SessionId = sid,
+                Command = "ПолучитьСписокРасходныхНакладных",
+                Parameters = new RequestParameter[] {
+                    new RequestParameter { Name = "период_с", Value = преиодС },
+                    new RequestParameter { Name = "клиент", Value = "ФК ГАРЗА" }
+                }
+            };
             ResponsePackage rsp = rqp.GetResponse("http://127.0.0.1:11004/"); // 1С Фарм-Сиб
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
@@ -23,15 +34,19 @@ namespace ImEx.Controllers
             }
 
             rqp.Command = "ПолучитьСписокПриходныхНакладных";
+            rqp.Parameters = new RequestParameter[] {
+                    new RequestParameter { Name = "период_с", Value = преиодС },
+                    new RequestParameter { Name = "клиент", Value = "Фарм-Сиб" }
+                };
             rsp = rqp.GetResponse("http://127.0.0.1:11014/"); // 1С ФК Гарза
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
             }
 
-            rqp.SessionId = new Guid("00000000-0000-0000-0000-000000000000");
-            rqp.AddSessionIdToParameters();
             rqp.Command = "[Pharm-Sib].[dbo].[settings_get]";
+            rqp.Parameters = new RequestParameter[] { };
+            rqp.AddSessionIdToParameters();
             rsp = rqp.GetResponse("http://127.0.0.1:11012/"); // SQL Server
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
@@ -54,13 +69,10 @@ namespace ImEx.Controllers
             return r;
         }
 
-        public Object WaitingPage()
+        public Object WaitingPage(String sessionId)
         {
-            Object v = null;
-            if (ControllerContext.HttpContext.IsDebuggingEnabled)
-                v = View("~/Views/F0/WaitingPage.cshtml"); // _ViewStart.cshtml
-            else
-                v = PartialView("~/Views/F0/WaitingPage.cshtml");
+            Guid.TryParse(sessionId, out Guid sid);
+            Object v = PartialView("~/Views/F0/WaitingPage.cshtml", sid);
             return v;
         }
 

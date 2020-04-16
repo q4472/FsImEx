@@ -1,31 +1,29 @@
-﻿<style type="text/css">
+﻿@model Guid
+<style type="text/css">
     #FsImEx_ImEx_Views_F0_WaitingPage {
         margin: 4px;
         width: 400px;
     }
 </style>
-<div id="FsImEx_ImEx_Views_F0_WaitingPage">
+<div id="FsImEx_ImEx_Views_F0_WaitingPage" data-session-id="@Model">
     <p>Выполняется подключение к двум базам 1с - "Фарм-Сиб" и "ФК Гарза" и получение списков расходных и приходных накладных. Пожалуйста подождите.</p>
-    <p style="text-align: center"><span class="cnt"></span></p>
+    <p style="text-align: center"><span class="cnt">0</span></p>
 </div>
 <script type="text/javascript">
-        var FsImEx_ImEx_Views_F0_WaitingPage = (function () {
-        var mainDiv = $('#FsImEx_ImEx_Views_F0_WaitingPage');
-        var cnt = mainDiv.find('span.cnt');
-        var i = 1;
-        cnt.text(i.toString());
+    var FsImEx_ImEx_Views_F0_WaitingPage = (function () {
+        let mainDiv = $('#FsImEx_ImEx_Views_F0_WaitingPage');
+        let sessionId = mainDiv.attr('data-session-id');
+        let cnt = mainDiv.find('span.cnt');
+        let i = 1;
         setTimeout(updateCnt, 1000);
-
         function updateCnt() {
             cnt.text((i++).toString());
-        setTimeout(updateCnt, 1000);
+            setTimeout(updateCnt, 1000);
         }
-        $.post('/ImEx/F0/Index', null, function (data) {
-            //alert(data);
+        $.post('/ImEx/F0/Index', 'sessionId=' + sessionId, function (data) {
             if ($('#_layout_content').length > 0) {
+                updateCnt = null;
                 $('#_layout_content').html(data);
-            } else {
-                $('body').html(data);
             }
         });
     })();
