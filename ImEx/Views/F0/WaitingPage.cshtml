@@ -1,30 +1,71 @@
-﻿@model Guid
-<style type="text/css">
-    #FsImEx_ImEx_Views_F0_WaitingPage {
+﻿<style type="text/css">
+    #ImEx_Views_F0_WaitingPage {
         margin: 4px;
         width: 400px;
     }
+
+        #ImEx_Views_F0_WaitingPage div.dbs-connnect {
+            display: none;
+        }
+
+        #ImEx_Views_F0_WaitingPage p {
+            margin: 4px;
+        }
 </style>
-<div id="FsImEx_ImEx_Views_F0_WaitingPage" data-session-id="@Model">
-    <p>Выполняется подключение к двум базам 1с - "Фарм-Сиб" и "ФК Гарза" и получение списков расходных и приходных накладных. Пожалуйста подождите.</p>
-    <p style="text-align: center"><span class="cnt">0</span></p>
+<div id="ImEx_Views_F0_WaitingPage">
+    <div class="src-choice">
+        <p>
+            <span>Выберите откуда брать расходные накладные:&nbsp;</span>
+            <select>
+                <option value="0" selected>Фарм-Сиб</option>
+                <option value="1">ФК Гарза</option>
+            </select>
+            <br />
+            <span>и за какой период:&nbsp;</span>
+            <select>
+                <option value="1" selected>1 месяц</option>
+                <option value="2">2 месяца</option>
+                <option value="3">3 месяца</option>
+            </select>
+        </p>
+        <p>
+            <input type="button" value="Выбрать" />
+        </p>
+    </div>
+    <div class="dbs-connnect">
+        <p>
+            Выполняется подключение к двум базам 1с - "Фарм-Сиб" и "ФК Гарза"
+            и получение списков расходных и приходных накладных.
+            Пожалуйста подождите.
+        </p>
+        <p style="text-align: center"><span class="cnt">0</span></p>
+    </div>
 </div>
 <script type="text/javascript">
-    var FsImEx_ImEx_Views_F0_WaitingPage = (function () {
-        let mainDiv = $('#FsImEx_ImEx_Views_F0_WaitingPage');
-        let sessionId = mainDiv.attr('data-session-id');
-        let cnt = mainDiv.find('span.cnt');
-        let i = 1;
-        setTimeout(updateCnt, 1000);
-        function updateCnt() {
-            cnt.text((i++).toString());
-            setTimeout(updateCnt, 1000);
-        }
-        $.post('/ImEx/F0/Index', 'sessionId=' + sessionId, function (data) {
-            if ($('#_layout_content').length > 0) {
-                updateCnt = null;
-                $('#_layout_content').html(data);
+    var ImEx_Views_F0_WaitingPage = (function () {
+        let mainDiv = $('#ImEx_Views_F0_WaitingPage');
+        let srcChoice = mainDiv.find('div.src-choice');
+        let dbsConnect = mainDiv.find('div.dbs-connnect');
+        srcChoice.find('input').click(function () {
+            $(this).prop('disabled', true);
+            let src = srcChoice.find('select').eq(0);
+            src.prop('disabled', true);
+            let period = srcChoice.find('select').eq(1);
+            period.prop('disabled', true);
+            dbsConnect.show();
+            let cnt = dbsConnect.find('span.cnt');
+            let i = 1;
+            let interval = setInterval(updateCnt, 1000);
+            function updateCnt() {
+                cnt.text((i++).toString());
             }
+            let data = 'src=' + src.val() + '&period=' + period.val();
+            $.post('/ImEx/F0/Index', data, function (data) {
+                clearInterval(interval);
+                if ($('#_layout_content').length > 0) {
+                    $('#_layout_content').html(data);
+                }
+            });
         });
     })();
 </script>
