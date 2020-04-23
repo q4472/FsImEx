@@ -154,6 +154,8 @@ namespace ImEx.Controllers
                 Command = "ДобавитьПриходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
+                    new RequestParameter { Name = "Фирма", Value = Session["dClient"] },
+                    new RequestParameter { Name = "Клиент", Value = Session["sClient"] },
                     new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
                     new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
                 }
