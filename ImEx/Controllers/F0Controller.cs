@@ -28,7 +28,7 @@ namespace ImEx.Controllers
             switch (src)
             {
                 case 1:
-                    sUri = "http://127.0.0.1:11014/"; // 1С ФК Гарза
+                    sUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
                     sClient = "Фарм-Сиб";
                     dUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
                     dClient = "ФК ГАРЗА";
@@ -38,7 +38,7 @@ namespace ImEx.Controllers
                 default:
                     sUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
                     sClient = "ФК ГАРЗА";
-                    dUri = "http://127.0.0.1:11014/"; // 1С ФК Гарза
+                    dUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
                     dClient = "Фарм-Сиб";
                     discounKey = "Скидка при оформлении передачи из Фарм-Сиб в Гарза";
                     break;
@@ -46,7 +46,7 @@ namespace ImEx.Controllers
             Session["src"] = src;
             Session["sUri"] = sUri;
             Session["sClient"] = sClient;
-            Session["dUri"] = sUri;
+            Session["dUri"] = dUri;
             Session["dClient"] = dClient;
 
             периодС = DateTime.Now.AddMonths(-period);
@@ -91,7 +91,7 @@ namespace ImEx.Controllers
                     foreach (DataRow dr in dt.Rows)
                     {
                         // Гриша
-                        if (((Int32)dr[1]) == 3 && dr[2] as String == discounKey)
+                        if (dr[1] != DBNull.Value && dr[2] !=DBNull.Value && ((Int32)dr[1]) == 3 && dr[2] as String == discounKey)
                         {
                             Double.TryParse(dr[3] as String, NumberStyles.Any, CultureInfo.InvariantCulture, out Double discount);
                             Session["discount"] = discount;
@@ -120,7 +120,7 @@ namespace ImEx.Controllers
             if (РасходнаяНакладная != null)
             {
                 status += $"\nПолучена расходная накладная №{num}";
-                ДобавитьПриходнуюНакладную(РасходнаяНакладная);
+                status += "\n" + ДобавитьПриходнуюНакладную(РасходнаяНакладная);
             }
             return status;
         }
@@ -146,21 +146,33 @@ namespace ImEx.Controllers
             return РасходнаяНакладная;
         }
 
-        private void ДобавитьПриходнуюНакладную(String РасходнаяНакладная)
+        private String ДобавитьПриходнуюНакладную(String РасходнаяНакладная)
         {
-            RequestPackage rqp = new RequestPackage
+            String status = "ДобавитьПриходнуюНакладную()\n";
+            /*
+            status += ((Int32)Session["src"]).ToString() +
+            "\n" + (String)Session["sUri"] +
+            "\n" + (String)Session["sClient"] +
+            "\n" + (String)Session["dUri"] +
+            "\n" + (String)Session["dClient"];
+            */
+            try
             {
-                SessionId = (Guid)Session["sessionId"],
-                Command = "ДобавитьПриходнуюНакладную",
-                Parameters = new RequestParameter[]
+
+                RequestPackage rqp = new RequestPackage();
+                rqp.SessionId = (Guid)Session["sessionId"];
+                rqp.Command = "ДобавитьПриходнуюНакладную";
+                rqp.Parameters = new RequestParameter[]
                 {
-                    new RequestParameter { Name = "Фирма", Value = Session["sClient"] },
-                    new RequestParameter { Name = "Клиент", Value = Session["dClient"] },
-                    new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
-                    new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
-                }
-            };
-            rqp.GetResponse((String)Session["sUri"]);
+                        new RequestParameter { Name = "Фирма", Value = Session["sClient"] },
+                        new RequestParameter { Name = "Клиент", Value = Session["dClient"] },
+                        new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
+                        new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
+                };
+                rqp.GetResponse((String)Session["dUri"]);
+            }
+            catch (Exception e) { status += "\n" + e.ToString(); }
+            return status;
         }
     }
 }
