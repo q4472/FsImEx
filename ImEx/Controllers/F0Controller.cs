@@ -160,7 +160,7 @@ namespace ImEx.Controllers
                     new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
                 }
             };
-            rqp.GetResponse((String)Session["dUri"]);
+            rqp.GetResponse((String)Session["sUri"]);
         }
     }
 }
