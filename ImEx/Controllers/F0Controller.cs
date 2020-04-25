@@ -106,8 +106,8 @@ namespace ImEx.Controllers
             if (РасходнаяНакладная != null)
             {
                 status += $"<br>\nПолучена расходная накладная №{num}";
-                status += $"<br>\n{РасходнаяНакладная}";
-                //status += "\n" + ДобавитьПриходнуюНакладную(РасходнаяНакладная);
+                //status += $"<br>\n{РасходнаяНакладная}";
+                status += $"<br>\n{ДобавитьПриходнуюНакладную(РасходнаяНакладная)}";
             }
             return status;
         }
@@ -137,13 +137,7 @@ namespace ImEx.Controllers
         private String ДобавитьПриходнуюНакладную(String РасходнаяНакладная)
         {
             String status = "ДобавитьПриходнуюНакладную()\n";
-            /*
-            status += ((Int32)Session["src"]).ToString() +
-            "\n" + (String)Session["sUri"] +
-            "\n" + (String)Session["sClient"] +
-            "\n" + (String)Session["dUri"] +
-            "\n" + (String)Session["dClient"];
-            */
+            Env env = (Env)Session["env"];
             try
             {
 
@@ -157,9 +151,10 @@ namespace ImEx.Controllers
                         new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
                         new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
                 };
-                rqp.GetResponse((String)Session["dUri"]);
+                rqp.GetResponse(env.DestUri);
+                status += "<br>\nOK.";
             }
-            catch (Exception e) { status += "\n" + e.ToString(); }
+            catch (Exception e) { status += "\n<br>" + e.ToString(); }
             return status;
         }
     }
