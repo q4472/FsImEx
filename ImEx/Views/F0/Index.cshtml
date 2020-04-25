@@ -110,15 +110,17 @@
             </td>
         </tr>
     </table>
+    <div class="msg"></div>
 </div>
 <script type="text/javascript">
     var ImEx_Views_F0_Index = (function () {
-        var mainDiv = $('#ImEx_Views_F0_Index');
-        var fsTable = mainDiv.find('td.fs table');
-        var fsRows = fsTable.find('tr');
-        var gzTable = mainDiv.find('td.gz table');
-        var gzRows = gzTable.find('tr');
-        var cmdInput = mainDiv.find('td.cmd input');
+        let mainDiv = $('#ImEx_Views_F0_Index');
+        let fsTable = mainDiv.find('td.fs table');
+        let fsRows = fsTable.find('tr');
+        let gzTable = mainDiv.find('td.gz table');
+        let gzRows = gzTable.find('tr');
+        let cmdInput = mainDiv.find('td.cmd input');
+        let msg = mainDiv.find(".msg");
         
         (function markCorrItems() {
             fsRows.each(function (index, element) {
@@ -184,7 +186,8 @@
                     if (confirm('Загрузить расходную накладнаю № ' + num + '?')) {
                         var data = 'num=' + num;
                         $.post('/ImEx/F0/SendBill', data, function (data) {
-                            alert(data);
+                            //alert(data);
+                            msg.html(data);
                         });
                     }
                 }
