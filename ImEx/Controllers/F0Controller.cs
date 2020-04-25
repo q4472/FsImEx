@@ -10,44 +10,33 @@ namespace ImEx.Controllers
     {
         private DateTime периодС = DateTime.Now.AddMonths(-1);
 
-        //Session["sessionId"]
-        //Session["src"]
-        //Session["sUri"]
-        //Session["sClient"]
-        //Session["dUri"]
-        //Session["dClient"]
-        //Session["discount"]
-
         public Object Index(Int32 src, Int32 period)
         {
-            Object r = "ImEx.HomeController.Index()";
-
-            String sUri, dUri;
-            String sClient, dClient;
-            String discounKey;
+            Object r = "ImEx.Controllers.F0Controller.Index()";
+            Env env = (Env)Session["env"];
+            env.Src = src;
             switch (src)
             {
                 case 1:
-                    sUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
-                    sClient = "Фарм-Сиб";
-                    dUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
-                    dClient = "ФК ГАРЗА";
-                    discounKey = "Скидка при оформлении передачи из Гарза в Фарм-Сиб";
+                    env.SrcUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
+                    env.SrcFirm = "ООО \"ФК ГАРЗА\"";
+                    env.SrcClient = "ООО \"Фарм-Сиб\"";
+                    env.DestUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
+                    env.DestFirm = "ООО \"Фарм-Сиб\"";
+                    env.DestClient = "ООО \"ФК ГАРЗА\"";
+                    env.DiscountKey = "Скидка при оформлении передачи из Гарза в Фарм-Сиб";
                     break;
                 case 0:
                 default:
-                    sUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
-                    sClient = "ФК ГАРЗА";
-                    dUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
-                    dClient = "Фарм-Сиб";
-                    discounKey = "Скидка при оформлении передачи из Фарм-Сиб в Гарза";
+                    env.SrcUri = "http://127.0.0.1:11004/"; // 1С Фарм-Сиб
+                    env.SrcFirm = "ООО \"Фарм-Сиб\"";
+                    env.SrcClient = "ООО \"ФК ГАРЗА\"";
+                    env.DestUri = "http://127.0.0.1:11014/"; // 1С ФК ГАРЗА
+                    env.DestFirm = "ООО \"ФК ГАРЗА\"";
+                    env.DestClient = "ООО \"Фарм-Сиб\"";
+                    env.DiscountKey = "Скидка при оформлении передачи из Фарм-Сиб в Гарза";
                     break;
             }
-            Session["src"] = src;
-            Session["sUri"] = sUri;
-            Session["sClient"] = sClient;
-            Session["dUri"] = dUri;
-            Session["dClient"] = dClient;
 
             периодС = DateTime.Now.AddMonths(-period);
 
@@ -55,14 +44,14 @@ namespace ImEx.Controllers
 
             RequestPackage rqp = new RequestPackage
             {
-                SessionId = (Guid)Session["sessionId"],
+                SessionId = env.SessionId,
                 Command = "ПолучитьСписокРасходныхНакладных",
                 Parameters = new RequestParameter[] {
                     new RequestParameter { Name = "период_с", Value = периодС },
-                    new RequestParameter { Name = "клиент", Value = sClient }
+                    new RequestParameter { Name = "клиент", Value = env.SrcClient }
                 }
             };
-            ResponsePackage rsp = rqp.GetResponse(sUri);
+            ResponsePackage rsp = rqp.GetResponse(env.SrcUri);
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
@@ -71,9 +60,9 @@ namespace ImEx.Controllers
             rqp.Command = "ПолучитьСписокПриходныхНакладных";
             rqp.Parameters = new RequestParameter[] {
                     new RequestParameter { Name = "период_с", Value = периодС },
-                    new RequestParameter { Name = "клиент", Value = dClient }
+                    new RequestParameter { Name = "клиент", Value = env.DestClient }
                 };
-            rsp = rqp.GetResponse(dUri);
+            rsp = rqp.GetResponse(env.DestUri);
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0)
             {
                 ds.Tables.Add(rsp.Data.Tables[0].Copy());
@@ -91,23 +80,23 @@ namespace ImEx.Controllers
                     foreach (DataRow dr in dt.Rows)
                     {
                         // Гриша
-                        if (dr[1] != DBNull.Value && dr[2] !=DBNull.Value && ((Int32)dr[1]) == 3 && dr[2] as String == discounKey)
+                        if (dr[1] != DBNull.Value && ((Int32)dr[1]) == 3 &&
+                            dr[2] != DBNull.Value && ((String)dr[2]) == env.DiscountKey)
                         {
-                            Double.TryParse(dr[3] as String, NumberStyles.Any, CultureInfo.InvariantCulture, out Double discount);
-                            Session["discount"] = discount;
+                            Double.TryParse(dr[3] as String, NumberStyles.Any, CultureInfo.InvariantCulture, out env.Discount);
                         }
                     }
                 }
             }
-
+            
+            Session["env"] = env;
             r = PartialView("~/Views/F0/Index.cshtml", ds);
             return r;
         }
 
         public Object WaitingPage(String sessionId)
         {
-            Guid.TryParse(sessionId, out Guid sid);
-            Session["sessionId"] = sid;
+            Session["env"] = new Env(sessionId);
             Object v = PartialView("~/Views/F0/WaitingPage.cshtml");
             return v;
         }
@@ -120,7 +109,7 @@ namespace ImEx.Controllers
             if (РасходнаяНакладная != null)
             {
                 status += $"\nПолучена расходная накладная №{num}";
-                status += "\n" + ДобавитьПриходнуюНакладную(РасходнаяНакладная);
+                //status += "\n" + ДобавитьПриходнуюНакладную(РасходнаяНакладная);
             }
             return status;
         }
@@ -128,9 +117,10 @@ namespace ImEx.Controllers
         private String ПолучитьРасходнуюНакладную(String num)
         {
             String РасходнаяНакладная = null;
+            Env env = (Env)Session["env"];
             RequestPackage rqp = new RequestPackage
             {
-                SessionId = (Guid)Session["sessionId"],
+                SessionId = env.SessionId,
                 Command = "ПолучитьРасходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
@@ -138,7 +128,7 @@ namespace ImEx.Controllers
                     new RequestParameter { Name = "fsN", Value = num }
                 }
             };
-            ResponsePackage rsp = rqp.GetResponse((String)Session["sUri"]);
+            ResponsePackage rsp = rqp.GetResponse(env.SrcUri);
             if (rsp != null && rsp.Data != null && rsp.Data.Tables.Count > 0 && rsp.Data.Tables[0].Rows.Count > 0)
             {
                 РасходнаяНакладная = rsp.Data.Tables[0].Rows[0][0] as String;
@@ -173,6 +163,23 @@ namespace ImEx.Controllers
             }
             catch (Exception e) { status += "\n" + e.ToString(); }
             return status;
+        }
+    }
+    public class Env
+    {
+        public Guid SessionId;
+        public Int32 Src;
+        public String SrcUri;
+        public String SrcFirm;
+        public String SrcClient;
+        public String DestUri;
+        public String DestFirm;
+        public String DestClient;
+        public String DiscountKey;
+        public Double Discount;
+        public Env(String sessionId)
+        {
+            Guid.TryParse(sessionId, out SessionId);
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿@using System.Data
+@using ImEx.Controllers
 @model DataSet
 @{
     DataTable fs = null;
     if (Model.Tables.Contains("СписокРасходныхНакладных")) { fs = Model.Tables["СписокРасходныхНакладных"]; }
     DataTable gz = null;
     if (Model.Tables.Contains("СписокПриходныхНакладных")) { gz = Model.Tables["СписокПриходныхНакладных"]; }
+    Env env = (Env)Session["env"];
 }
 <style type="text/css">
     #ImEx_Views_F0_Index {
@@ -33,8 +35,8 @@
 </style>
 <div id="ImEx_Views_F0_Index">
     <div>
-        <span>Скидка при оформлении передачи из "@Session["dClient"]" в "@Session["sClient"]": @Session["discount"]%</span>
-        <input type="checkbox" name="Применить скидку" checked="checked" disabled="disabled" />
+        <span>Скидка при оформлении передачи из "@env.SrcFirm" в "@env.DestFirm": @env.Discount%</span>
+        <input type="checkbox" name="Применить скидку" checked="checked" disabled />
     </div>
     <table>
         <tr>
@@ -45,8 +47,8 @@
                 <div style="width: 500px; height: 400px; overflow: auto">
                     @if (fs != null && fs.Rows.Count > 0)
                     {
-                    <p>Список расходных накладных в "@Session["dClient"]" на "@Session["sClient"]".</p>
-                    <p>Синим цветом выделены расходные накладные в "@Session["dClient"]" для которых есть приходная накладная в "@Session["sClient"]".</p>
+                    <p>Список расходных накладных в "@env.SrcFirm" на "@env.SrcClient".</p>
+                    <p>Синим цветом выделены расходные накладные в "@env.SrcFirm" для которых есть приходная накладная в "@env.DestFirm".</p>
                         <br />
                         DataView dv = fs.DefaultView;
                         dv.Sort = "ДатаДок desc, НомерДок desc";
@@ -67,7 +69,7 @@
                     }
                     else
                     {
-                <p>В "@Session["dClient"]" нет расходных накладных на "@Session["sClient"]" в указанном периоде.</p>
+                <p>В "@env.SrcFirm" нет расходных накладных на "@env.DestFirm" в указанном периоде.</p>
                     }
                 </div>
             </td>
@@ -79,8 +81,8 @@
                 <div style="width: 500px; height: 400px; overflow: auto">
                     @if (gz != null && gz.Rows.Count > 0)
                     {
-                    <p>Список приходных накладных в "@Session["sClient"]" от "@Session["dClient"]".</p>
-                    <p>Синим цветом выделены приходные накладные в "@Session["sClient"]" для которых есть расходная накладная в "@Session["dClient"]".</p>
+                    <p>Список приходных накладных в "@env.DestFirm" от "@env.SrcFirm".</p>
+                    <p>Синим цветом выделены приходные накладные в "@env.DestFirm" для которых есть расходная накладная в "@env.SrcFirm".</p>
                         <br />
                         DataView dv = gz.DefaultView;
                         dv.Sort = "ДатаДок desc, НомерДок desc";
@@ -102,7 +104,7 @@
                     }
                     else
                     {
-                <p>В "@Session["sClient"]" нет приходных накладных от "@Session["dClient"]" в указанном периоде.</p>
+                <p>В "@env.DestFirm" нет приходных накладных от "@env.SrcFirm" в указанном периоде.</p>
                     }
                 </div>
             </td>
