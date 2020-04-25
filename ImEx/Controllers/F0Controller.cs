@@ -142,7 +142,7 @@ namespace ImEx.Controllers
             {
 
                 RequestPackage rqp = new RequestPackage();
-                rqp.SessionId = (Guid)Session["sessionId"];
+                rqp.SessionId = env.SessionId;
                 rqp.Command = "ДобавитьПриходнуюНакладную";
                 rqp.Parameters = new RequestParameter[]
                 {
