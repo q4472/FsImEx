@@ -146,10 +146,10 @@ namespace ImEx.Controllers
                 rqp.Command = "ДобавитьПриходнуюНакладную";
                 rqp.Parameters = new RequestParameter[]
                 {
-                        new RequestParameter { Name = "Фирма", Value = Session["sClient"] },
-                        new RequestParameter { Name = "Клиент", Value = Session["dClient"] },
+                        new RequestParameter { Name = "Фирма", Value = env.DestFirm },
+                        new RequestParameter { Name = "Клиент", Value = env.DestClient },
                         new RequestParameter { Name = "РасходнаяНакладная", Value = РасходнаяНакладная },
-                        new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = (Double)Session["discount"] }
+                        new RequestParameter { Name = "СкидкаПоставщикаВПроцентах", Value = env.Discount }
                 };
                 rqp.GetResponse(env.DestUri);
                 status += "<br>\nOK.";
