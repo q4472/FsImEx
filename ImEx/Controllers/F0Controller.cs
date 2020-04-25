@@ -8,13 +8,12 @@ namespace ImEx.Controllers
 {
     public class F0Controller : Controller
     {
-        private DateTime периодС = DateTime.Now.AddMonths(-1);
-
         public Object Index(Int32 src, Int32 period)
         {
             Object r = "ImEx.Controllers.F0Controller.Index()";
             Env env = (Env)Session["env"];
             env.Src = src;
+            env.Period = period;
             switch (src)
             {
                 case 1:
@@ -38,8 +37,6 @@ namespace ImEx.Controllers
                     break;
             }
 
-            периодС = DateTime.Now.AddMonths(-period);
-
             DataSet ds = new DataSet();
 
             RequestPackage rqp = new RequestPackage
@@ -47,7 +44,7 @@ namespace ImEx.Controllers
                 SessionId = env.SessionId,
                 Command = "ПолучитьСписокРасходныхНакладных",
                 Parameters = new RequestParameter[] {
-                    new RequestParameter { Name = "период_с", Value = периодС },
+                    new RequestParameter { Name = "период_с", Value = DateTime.Now.AddMonths(-env.Period) },
                     new RequestParameter { Name = "клиент", Value = env.SrcClient }
                 }
             };
@@ -59,7 +56,7 @@ namespace ImEx.Controllers
 
             rqp.Command = "ПолучитьСписокПриходныхНакладных";
             rqp.Parameters = new RequestParameter[] {
-                    new RequestParameter { Name = "период_с", Value = периодС },
+                    new RequestParameter { Name = "период_с", Value = DateTime.Now.AddMonths(-env.Period) },
                     new RequestParameter { Name = "клиент", Value = env.DestClient }
                 };
             rsp = rqp.GetResponse(env.DestUri);
@@ -125,8 +122,8 @@ namespace ImEx.Controllers
                 Command = "ПолучитьРасходнуюНакладную",
                 Parameters = new RequestParameter[]
                 {
-                    new RequestParameter { Name = "период_с", Value = периодС },
-                    new RequestParameter { Name = "fsN", Value = num }
+                    new RequestParameter { Name = "период_с", Value = DateTime.Now.AddMonths(-env.Period) },
+                    new RequestParameter { Name = "num", Value = num }
                 }
             };
             ResponsePackage rsp = rqp.GetResponse(env.SrcUri);
@@ -170,6 +167,7 @@ namespace ImEx.Controllers
     {
         public Guid SessionId;
         public Int32 Src;
+        public Int32 Period;
         public String SrcUri;
         public String SrcFirm;
         public String SrcClient;
